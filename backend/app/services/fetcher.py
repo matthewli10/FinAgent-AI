@@ -8,7 +8,6 @@ load_dotenv()
 
 # Debug environment variables
 SEC_API_KEY = os.getenv("SEC_API_KEY")
-print("🔑 Loaded SEC_API_KEY:", SEC_API_KEY)
 EXTRACTOR_API = "https://api.sec-api.io/extractor"
 CIK_LOOKUP_URL = "https://www.sec.gov/include/ticker.txt"
 EDGAR_SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"

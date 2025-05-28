@@ -1,11 +1,23 @@
 from fastapi import FastAPI
-from app.routers import summarize, watchlist, fetch
-from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
+from .routers import auth, watchlist, summaries
 
-load_dotenv()
+app = FastAPI()
 
-app = FastAPI(title="Earnings Summary Agent")
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app.include_router(summarize.router, prefix="/summarize", tags=["Summarization"])
-app.include_router(watchlist.router, prefix="/watchlist", tags=["Watchlist"])
-app.include_router(fetch.router, prefix="/fetch", tags=["Fetch"])
+# Include routers
+app.include_router(auth.router, tags=["authentication"])
+app.include_router(watchlist.router, tags=["watchlist"])
+app.include_router(summaries.router, tags=["summaries"])
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to FinAgent API"}

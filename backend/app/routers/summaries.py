@@ -7,19 +7,19 @@ from ..firebase_config import verify_token
 
 router = APIRouter()
 
-@router.get("/watchlist", response_model=List[schemas.Watchlist])
-async def get_watchlist(
+@router.get("/summaries", response_model=List[schemas.Summary])
+async def get_summaries(
     db: Session = Depends(get_db),
     firebase_user: dict = Depends(verify_token)
 ):
     user = db.query(models.User).filter(models.User.firebase_uid == firebase_user["uid"]).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return db.query(models.Watchlist).filter(models.Watchlist.user_id == user.id).all()
+    return db.query(models.Summary).filter(models.Summary.user_id == user.id).all()
 
-@router.post("/watchlist", response_model=schemas.Watchlist)
-async def add_to_watchlist(
-    watchlist_item: schemas.WatchlistCreate,
+@router.post("/summaries", response_model=schemas.Summary)
+async def create_summary(
+    summary: schemas.SummaryCreate,
     db: Session = Depends(get_db),
     firebase_user: dict = Depends(verify_token)
 ):
@@ -27,17 +27,8 @@ async def add_to_watchlist(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Check if ticker already exists in user's watchlist
-    existing = db.query(models.Watchlist).filter(
-        models.Watchlist.user_id == user.id,
-        models.Watchlist.ticker == watchlist_item.ticker
-    ).first()
-    
-    if existing:
-        raise HTTPException(status_code=400, detail="Ticker already in watchlist")
-    
-    db_watchlist = models.Watchlist(**watchlist_item.dict(), user_id=user.id)
-    db.add(db_watchlist)
+    db_summary = models.Summary(**summary.dict(), user_id=user.id)
+    db.add(db_summary)
     db.commit()
-    db.refresh(db_watchlist)
-    return db_watchlist
+    db.refresh(db_summary)
+    return db_summary 

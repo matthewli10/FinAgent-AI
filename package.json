@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "react-native-swipe-list-view": "^3.2.9"
+  }
+}

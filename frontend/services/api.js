@@ -21,3 +21,55 @@ export async function summarizeTranscript(ticker, transcript_text) {
     }
   }
   
+export async function addToWatchlist(ticker, token) {
+  try {
+    const res = await fetch('http://192.168.86.45:8000/watchlist', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ ticker }),
+    });
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText || 'Failed to add to watchlist');
+    }
+    return await res.json();
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function deleteFromWatchlist(ticker, token) {
+  try {
+    const res = await fetch(`http://192.168.86.45:8000/watchlist/${ticker}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText || 'Failed to delete from watchlist');
+    }
+    return await res.json();
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function fetchYahooFinancePrices(tickers) {
+  const symbols = tickers.join(',');
+  const url = `http://192.168.86.45:8000/stock-prices?symbols=${symbols}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch prices');
+    const data = await res.json();
+    // Data is already in the correct format: { TICKER: { price, change, changePercent } }
+    return data;
+  } catch (err) {
+    throw err;
+  }
+}
+  

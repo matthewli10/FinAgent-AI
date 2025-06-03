@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Text
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Text, Date, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -13,7 +13,6 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
-    summaries = relationship("Summary", back_populates="user")
     watchlist = relationship("Watchlist", back_populates="user")
 
 class Summary(Base):
@@ -21,12 +20,11 @@ class Summary(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     ticker = Column(String, index=True)
+    filing_date = Column(Date, index=True)
     summary_text = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
-    user_id = Column(Integer, ForeignKey("users.id"))
     
-    # Relationships
-    user = relationship("User", back_populates="summaries")
+    __table_args__ = (UniqueConstraint('ticker', 'filing_date', name='_ticker_filing_uc'),)
 
 class Watchlist(Base):
     __tablename__ = "watchlist"
@@ -38,3 +36,4 @@ class Watchlist(Base):
     
     # Relationships
     user = relationship("User", back_populates="watchlist")
+

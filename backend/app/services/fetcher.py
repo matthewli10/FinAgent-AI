@@ -2,6 +2,9 @@ import os
 import requests
 from app.services.summarizer import summarize_transcript
 from dotenv import load_dotenv
+from app.models import Summary
+from app.database import SessionLocal
+from datetime import date
 
 # Load environment variables
 load_dotenv()
@@ -48,6 +51,27 @@ def get_latest_10q_filing_url(ticker: str) -> str:
             primary_doc = filings["primaryDocument"][i]
             return f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{accession}/{primary_doc}"
 
+    raise Exception(f"No recent 10-Q found for ticker {ticker}")
+
+def get_latest_10q_filing_info(ticker: str):
+    cik = get_cik_from_ticker(ticker)
+    if not cik:
+        raise Exception(f"CIK not found for ticker {ticker}")
+
+    url = EDGAR_SUBMISSIONS_URL.format(cik=cik)
+    res = requests.get(url, headers=HEADERS)
+    if res.status_code != 200:
+        raise Exception("Failed to fetch filings from SEC")
+
+    data = res.json()
+    filings = data.get("filings", {}).get("recent", {})
+    for i, form in enumerate(filings.get("form", [])):
+        if form == "10-Q":
+            accession = filings["accessionNumber"][i].replace("-", "")
+            primary_doc = filings["primaryDocument"][i]
+            filing_date = filings["filingDate"][i]  # YYYY-MM-DD
+            filing_url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{accession}/{primary_doc}"
+            return filing_url, filing_date
     raise Exception(f"No recent 10-Q found for ticker {ticker}")
 
 def extract_filing_section(filing_url: str, item_code: str, return_type: str = "text") -> str:
@@ -101,4 +125,22 @@ def summarize_extracted_10q_sections(ticker: str, debug: bool = False) -> dict:
         "ticker": ticker.upper(),
         "summary": summary
     }
+
+def get_summary_from_db(ticker: str, filing_date: date):
+    db = SessionLocal()
+    summary = db.query(Summary).filter_by(ticker=ticker, filing_date=filing_date).first()
+    db.close()
+    return summary
+
+def save_summary_to_db(ticker: str, filing_date: date, summary_text: str):
+    db = SessionLocal()
+    summary = Summary(
+        ticker=ticker,
+        filing_date=filing_date,
+        summary_text=summary_text,
+        created_at=date.today()
+    )
+    db.add(summary)
+    db.commit()
+    db.close()
 

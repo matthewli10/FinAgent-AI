@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, 
 import { getAuth } from 'firebase/auth';
 import { addToWatchlist, deleteFromWatchlist, fetchYahooFinancePrices } from '../../services/api';
 import { Swipeable } from 'react-native-gesture-handler';
+import { useRouter } from 'expo-router';
 
 interface WatchlistItem {
   id: number;
@@ -12,6 +13,7 @@ interface WatchlistItem {
 }
 
 const DashboardScreen = () => {
+  const router = useRouter();
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +104,10 @@ const DashboardScreen = () => {
     }
   };
 
+  const handleStockPress = (ticker: string) => {
+    router.push(`/stock/${ticker}`);
+  };
+
   const renderRightActions = (ticker: string) => (
     <View style={styles.rowBack}>
       <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(ticker)}>
@@ -134,14 +140,17 @@ const DashboardScreen = () => {
           const isPositive = priceInfo ? priceInfo.changePercent > 0 : false;
           return (
             <Swipeable renderRightActions={() => renderRightActions(item.ticker)}>
-              <View style={styles.stockRow}>
+              <TouchableOpacity 
+                style={styles.stockRow}
+                onPress={() => handleStockPress(item.ticker)}
+              >
                 <Text style={styles.ticker}>{item.ticker}</Text>
                 <View style={styles.miniChart} />
                 <View style={[styles.badge, { backgroundColor: isPositive ? '#1ecb7b' : '#ff4d4f' }] }>
                   <Text style={styles.badgeText}>{priceInfo ? (isPositive ? '+' : '') + priceChange + '%' : '--'}</Text>
                 </View>
                 <Text style={styles.priceText}>{priceInfo ? `$${priceInfo.price.toFixed(2)}` : '--'}</Text>
-              </View>
+              </TouchableOpacity>
             </Swipeable>
           );
         }}

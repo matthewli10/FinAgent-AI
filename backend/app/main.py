@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, watchlist, summaries, fetch
+from .routers import auth, watchlist, summaries, fetch, stock_details
 
 app = FastAPI()
 
@@ -18,6 +18,7 @@ app.include_router(auth.router, tags=["authentication"])
 app.include_router(watchlist.router, tags=["watchlist"])
 app.include_router(summaries.router, tags=["summaries"])
 app.include_router(fetch.router, tags=["fetch"])
+app.include_router(stock_details.router, tags=["stock_details"])
 
 @app.get("/")
 def read_root():

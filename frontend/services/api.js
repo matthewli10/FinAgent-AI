@@ -72,4 +72,19 @@ export async function fetchYahooFinancePrices(tickers) {
     throw err;
   }
 }
+
+export async function fetchStockDetails(ticker, token) {
+  const API_BASE_URL = "http://192.168.86.45:8000";
+  const response = await fetch(`${API_BASE_URL}/stock/${ticker}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch stock details');
+  }
+
+  return response.json();
+}
   

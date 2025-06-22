@@ -101,4 +101,4 @@ export async function fetchStockDetails(ticker, token) {
 
   return response.json();
 }
-  
+

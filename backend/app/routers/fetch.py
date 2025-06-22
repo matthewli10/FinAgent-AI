@@ -13,9 +13,14 @@ class TickerRequest(BaseModel):
 @router.post("/summary-by-ticker")
 def summarize_by_ticker(req: TickerRequest):
     try:
+        print(f"[DEBUG] Starting summary generation for {req.ticker}")
         result = summarize_extracted_10q_sections(req.ticker, debug=req.debug)
+        print(f"[DEBUG] Successfully generated summary for {req.ticker}")
         return result
     except Exception as e:
+        print(f"[ERROR] Failed to generate summary for {req.ticker}: {e}")
+        import traceback
+        print(f"[ERROR] Full traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { getAuth } from 'firebase/auth';
@@ -20,23 +20,54 @@ export default function StockDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stockDetails, setStockDetails] = useState<StockDetails | null>(null);
+  const pollingIntervalRef = useRef<number | null>(null);
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  };
 
   useEffect(() => {
-    const fetchDetails = async () => {
+    const getDetails = async () => {
       try {
+        setLoading(true);
         const user = getAuth().currentUser;
         if (!user) throw new Error('User not authenticated');
         const token = await user.getIdToken();
         const details = await fetchStockDetails(ticker as string, token);
         setStockDetails(details);
+        
+        stopPolling();
+
+        if (details.summary === "generating...") {
+          pollingIntervalRef.current = setInterval(async () => {
+            try {
+              console.log(`Polling for ${ticker} summary...`);
+              const updatedDetails = await fetchStockDetails(ticker as string, token);
+              if (updatedDetails.summary !== "generating...") {
+                setStockDetails(updatedDetails);
+                stopPolling();
+              }
+            } catch (pollError) {
+              console.error("Polling failed:", pollError);
+              setError("Failed to retrieve summary.");
+              stopPolling();
+            }
+          }, 5000);
+        }
       } catch (err: any) {
         setError(err.message);
+        stopPolling();
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDetails();
+    getDetails();
+
+    return () => stopPolling();
   }, [ticker]);
 
   if (loading) {
@@ -100,7 +131,14 @@ export default function StockDetailsScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>AI Analysis</Text>
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryText}>{stockDetails.summary}</Text>
+          {stockDetails.summary === "generating..." ? (
+            <View style={styles.generatingContainer}>
+              <ActivityIndicator color="#00bfff" />
+              <Text style={styles.generatingText}>AI analysis in progress...</Text>
+            </View>
+          ) : (
+            <Text style={styles.summaryText}>{stockDetails.summary}</Text>
+          )}
         </View>
       </View>
     </ScrollView>
@@ -188,6 +226,17 @@ const styles = StyleSheet.create({
   },
   error: {
     color: '#ff4d4f',
+    fontSize: 16,
+  },
+  generatingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  generatingText: {
+    color: '#00bfff',
+    marginLeft: 10,
     fontSize: 16,
   },
 }); 

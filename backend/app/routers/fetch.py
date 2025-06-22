@@ -23,15 +23,20 @@ def summarize_by_ticker(req: TickerRequest):
 def stock_prices(symbols: str = Query(...)):
     result = {}
     for symbol in symbols.split(','):
-        ticker = yf.Ticker(symbol)
-        info = ticker.info
-        price = info.get('regularMarketPrice')
-        change = info.get('regularMarketChange')
-        change_percent = info.get('regularMarketChangePercent')
+        try:
+            ticker = yf.Ticker(symbol)
+            fast_info = ticker.fast_info
+            price = fast_info.get("last_price") or 0
+            change = fast_info.get("last_change") or 0
+            change_percent = fast_info.get("last_change_percent") or 0
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error fetching {symbol}: {str(e)}")
+
         result[symbol.upper()] = {
-            'price': price,
-            'change': change,
-            'changePercent': change_percent,
+            "price": price,
+            "change": change,
+            "changePercent": change_percent,
         }
     return result
+
 

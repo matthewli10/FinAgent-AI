@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, TextInput, Modal } from 'react-native';
 import { getAuth } from 'firebase/auth';
-import { addToWatchlist, deleteFromWatchlist, fetchYahooFinancePrices } from '../../services/api';
+import { addToWatchlist, deleteFromWatchlist, fetchYahooFinancePrices, getWatchlist } from '../../services/api.js';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 
@@ -39,13 +39,7 @@ const DashboardScreen = () => {
       const user = getAuth().currentUser;
       if (!user) throw new Error('User not authenticated');
       const token = await user.getIdToken();
-      const res = await fetch('http://192.168.86.45:8000/watchlist', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (!res.ok) throw new Error('Failed to fetch watchlist');
-      const data = await res.json();
+      const data = await getWatchlist(token);
       setWatchlist(data);
     } catch (err: any) {
       setError(err.message);

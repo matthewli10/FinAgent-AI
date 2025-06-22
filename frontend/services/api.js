@@ -1,6 +1,8 @@
+const API_BASE_URL = "http://192.168.1.9:8000";
+
 export async function summarizeTranscript(ticker, transcript_text) {
     try {
-      const res = await fetch("http://192.168.86.34:8000/summarize/", {
+      const res = await fetch(`${API_BASE_URL}/summarize/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ticker, transcript_text }),
@@ -21,9 +23,22 @@ export async function summarizeTranscript(ticker, transcript_text) {
     }
   }
   
+export async function getWatchlist(token) {
+    const res = await fetch(`${API_BASE_URL}/watchlist`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+    if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || 'Failed to fetch watchlist');
+    }
+    return await res.json();
+}
+
 export async function addToWatchlist(ticker, token) {
   try {
-    const res = await fetch('http://192.168.86.45:8000/watchlist', {
+    const res = await fetch(`${API_BASE_URL}/watchlist`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -43,7 +58,7 @@ export async function addToWatchlist(ticker, token) {
 
 export async function deleteFromWatchlist(ticker, token) {
   try {
-    const res = await fetch(`http://192.168.86.45:8000/watchlist/${ticker}`, {
+    const res = await fetch(`${API_BASE_URL}/watchlist/${ticker}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -61,7 +76,7 @@ export async function deleteFromWatchlist(ticker, token) {
 
 export async function fetchYahooFinancePrices(tickers) {
   const symbols = tickers.join(',');
-  const url = `http://192.168.86.45:8000/stock-prices?symbols=${symbols}`;
+  const url = `${API_BASE_URL}/stock-prices?symbols=${symbols}`;
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch prices');
@@ -74,7 +89,6 @@ export async function fetchYahooFinancePrices(tickers) {
 }
 
 export async function fetchStockDetails(ticker, token) {
-  const API_BASE_URL = "http://192.168.86.45:8000";
   const response = await fetch(`${API_BASE_URL}/stock/${ticker}`, {
     headers: {
       'Authorization': `Bearer ${token}`,

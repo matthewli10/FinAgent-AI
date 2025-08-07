@@ -6,14 +6,14 @@ FinAgent-AI is a full-stack mobile application that leverages artificial intelli
 
 ## Features
 
--  AI-Powered Analysis**: OpenAI GPT-4 automatically analyzes complex 10-Q financial reports
--  Mobile-First Design**: Cross-platform React Native app with intuitive user interface
--  Real-Time Data**: Live stock prices and market data via Yahoo Finance API
--  Asynchronous Processing**: Background AI processing ensures fast user experience
--  Intelligent Caching**: Database caching reduces API calls and improves performance
--  Secure Authentication**: Firebase authentication with JWT token verification
--  Watchlist Management**: Track favorite stocks with real-time updates
--  Investment Insights**: AI-generated summaries of key financial metrics
+-  AI-Powered Analysis: OpenAI GPT-4 automatically analyzes complex 10-Q financial reports
+-  Mobile-First Design: Cross-platform React Native app with intuitive user interface
+-  Real-Time Data: Live stock prices and market data via Yahoo Finance API
+-  Asynchronous Processing: Background AI processing ensures fast user experience
+-  Intelligent Caching: Database caching reduces API calls and improves performance
+-  Secure Authentication: Firebase authentication with JWT token verification
+-  Watchlist Management: Track favorite stocks with real-time updates
+-  Investment Insights: AI-generated summaries of key financial metrics
 
 ## Architecture
 

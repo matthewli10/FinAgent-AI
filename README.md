@@ -190,8 +190,7 @@ FinAgent-AI/
 - **Asynchronous Processing**: Background tasks prevent UI blocking
 - **Database Caching**: Reduces redundant AI API calls
 - **Intelligent Polling**: Efficient status checking for AI completion
-- **Error Handling**: Graceful degradation when APIs fail
-- **Connection Pooling**: Optimized database connections
+
 
 ### Database Management
 ```bash
@@ -223,13 +222,4 @@ npx expo build:ios
 # Or use EAS Build
 eas build --platform all
 ```
-
-## Acknowledgments
-
-- **OpenAI** for GPT-4 API access
-- **SEC EDGAR** for financial data
-- **Yahoo Finance** for market data
-- **Firebase** for authentication services
-- **React Native** and **FastAPI** communities
-
 **Built using React Native, FastAPI, Firebase, PostgreSQL, and OpenAI GPT-4**

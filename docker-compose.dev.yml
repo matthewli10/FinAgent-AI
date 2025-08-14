@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Development
+  postgres:
+    image: postgres:15-alpine
+    container_name: finagent-postgres-dev
+    environment:
+      POSTGRES_DB: finagent_dev
+      POSTGRES_USER: finagent_user
+      POSTGRES_PASSWORD: finagent_password
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./backend/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finagent_user -d finagent_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - finagent-dev-network
+
+  # FastAPI Backend with Development Settings
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: finagent-backend-dev
+    environment:
+      - DATABASE_URL=postgresql://finagent_user:finagent_password@postgres:5432/finagent_dev
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SEC_API_KEY=${SEC_API_KEY}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - ENVIRONMENT=development
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/venv
+      - /app/__pycache__
+    networks:
+      - finagent-dev-network
+    restart: unless-stopped
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+volumes:
+  postgres_dev_data:
+    driver: local
+
+networks:
+  finagent-dev-network:
+    driver: bridge 

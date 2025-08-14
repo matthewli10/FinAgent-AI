@@ -48,8 +48,45 @@ FinAgent-AI is a full-stack mobile application that leverages artificial intelli
 - OpenAI API key
 - Firebase project
 - SEC API key (sec-api.io)
+- Docker and Docker Compose (for containerized setup)
 
-### Backend Setup
+### Docker Setup 
+
+#### Quick Start with Docker
+```bash
+# Clone the repository
+git clone <repository-url>
+cd FinAgent-AI
+
+# Set up environment variables
+cp backend/.env.example backend/.env
+# Edit backend/.env with your API keys
+
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f backend
+```
+
+#### Development with Docker
+```bash
+# Start development environment with hot-reload
+docker-compose -f docker-compose.dev.yml up -d
+
+# Rebuild and restart backend
+docker-compose -f docker-compose.dev.yml restart backend
+```
+
+#### Production with Docker
+```bash
+# Start production environment
+docker-compose --profile production up -d
+```
+
+### Manual Setup
+
+#### Backend Setup
 
 1. **Clone the repository**
    ```bash
@@ -84,7 +121,7 @@ FinAgent-AI is a full-stack mobile application that leverages artificial intelli
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-### Frontend Setup
+#### Frontend Setup
 
 1. **Navigate to frontend directory**
    ```bash
@@ -110,7 +147,7 @@ FinAgent-AI is a full-stack mobile application that leverages artificial intelli
    - Scan QR code with Expo Go app
    - Or press 'i' for iOS simulator, 'a' for Android
 
-## 📱 Usage
+## Usage
 
 ### Getting Started
 1. **Sign up/Login**: Use Firebase authentication to create an account
@@ -124,7 +161,7 @@ FinAgent-AI is a full-stack mobile application that leverages artificial intelli
 - **AI Analysis**: Automatically generated insights from SEC filings
 - **Real-time Updates**: Live data and polling for AI summary status
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables (Backend)
 ```env
@@ -149,27 +186,69 @@ FIREBASE_CLIENT_EMAIL=your_client_email
 const API_BASE_URL = "http://your-backend-url:8000";
 ```
 
-## 🏛️ Project Structure
+## Docker Commands
+
+### Development
+```bash
+# Start development environment
+docker-compose -f docker-compose.dev.yml up -d
+
+# View logs
+docker-compose -f docker-compose.dev.yml logs -f
+
+# Stop services
+docker-compose -f docker-compose.dev.yml down
+
+# Rebuild backend
+docker-compose -f docker-compose.dev.yml build backend
+```
+
+### Production
+```bash
+# Start production environment
+docker-compose --profile production up -d
+
+# Scale backend
+docker-compose --profile production up -d --scale backend=3
+
+# View production logs
+docker-compose --profile production logs -f
+```
+
+### Database Management
+```bash
+# Access PostgreSQL
+docker exec -it finagent-postgres psql -U finagent_user -d finagent
+
+# Backup database
+docker exec finagent-postgres pg_dump -U finagent_user finagent > backup.sql
+
+# Restore database
+docker exec -i finagent-postgres psql -U finagent_user -d finagent < backup.sql
+```
+
+## Project Structure
 
 ```
 FinAgent-AI/
 ├── backend/
-│   ├── app/
-│   │   ├── routers/          # API endpoints
-│   │   ├── services/         # Business logic
-│   │   ├── models.py         # Database models
-│   │   └── database.py       # Database configuration
-│   ├── requirements.txt      # Python dependencies
+│   ├── app/                 # API endpoints and business logic
+│   ├── Dockerfile           # Backend container configuration
+│   ├── .dockerignore        # Docker build exclusions
+│   ├── init_db.sql          # Database initialization script
+│   ├── requirements.txt     # Python dependencies
 │   └── .env                 # Environment variables
 ├── frontend/
 │   ├── app/                 # React Native screens
 │   ├── services/            # API service layer
 │   ├── components/          # Reusable components
 │   └── package.json         # Node.js dependencies
+├── docker-compose.yml       # Production Docker configuration
+├── docker-compose.dev.yml   # Development Docker configuration
 └── README.md
 ```
 
-## 🔍 API Endpoints
+## API Endpoints
 
 ### Authentication Required
 - `GET /stock/{ticker}` - Get stock details and AI summary
@@ -190,7 +269,21 @@ FinAgent-AI/
 - **Asynchronous Processing**: Background tasks prevent UI blocking
 - **Database Caching**: Reduces redundant AI API calls
 - **Intelligent Polling**: Efficient status checking for AI completion
+- **Connection Pooling**: Optimized database connections
+- **Container Orchestration**: Docker for consistent deployment
 
+## Development
+
+### Running Tests
+```bash
+# Backend tests
+cd backend
+python -m pytest
+
+# Frontend tests
+cd frontend
+npm test
+```
 
 ### Database Management
 ```bash
@@ -201,25 +294,27 @@ python clear_summary_error.py TICKER
 python init_db.py
 ```
 
-## 🚀 Deployment
+##  Deployment
 
-### Backend Deployment
+### Docker Deployment
 ```bash
-# Using Docker
-docker build -t finagent-backend .
-docker run -p 8000:8000 finagent-backend
+# Production deployment
+docker-compose --profile production up -d
 
-# Using uvicorn directly
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+# Development deployment
+docker-compose -f docker-compose.dev.yml up -d
 ```
 
-### Frontend Deployment
+### Manual Deployment
 ```bash
-# Build for production
+# Backend deployment
+cd backend
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# Frontend deployment
+cd frontend
 npx expo build:android
 npx expo build:ios
-
-# Or use EAS Build
-eas build --platform all
 ```
-**Built using React Native, FastAPI, Firebase, PostgreSQL, and OpenAI GPT-4**
+
+**Built using React Native, FastAPI, PostgreSQL, Firebase, OpenAI GPT-4, and Docker**
